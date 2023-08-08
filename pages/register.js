@@ -1,3 +1,5 @@
+
+
 import { Card, Form, Alert, Button } from "react-bootstrap";
 import { useState, useEffect } from 'react';
 import { registerUser } from "../lib/authenticate";
@@ -20,6 +22,7 @@ export default function Register(props) {
       router.push("/login");
     }catch(err){
      setWarning(err.message);
+     console.log("Error from registerUser in register file");
     }
 
   }
@@ -48,7 +51,7 @@ export default function Register(props) {
         <br />
         <Form.Group>
           <Form.Label>Confirm Password:</Form.Label>
-          <Form.Control type="password" value={password2} id="password" name="password" onChange={e => setPassword2(e.target.value)} />
+          <Form.Control type="password" value={password2} id="password2" name="password" onChange={e => setPassword2(e.target.value)} />
         </Form.Group  >
 
         {warning && <>

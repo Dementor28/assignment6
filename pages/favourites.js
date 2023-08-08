@@ -1,9 +1,11 @@
+
 import Error from 'next/error';
 import { Row, Col } from 'react-bootstrap';
 import Card from 'react-bootstrap/Card';
 import ArtworkCard from '../components/ArtworkCard'
 import { useAtom } from 'jotai';
 import { favouritesAtom } from '../store';
+import { useState } from 'react';
 
 export default function Favourites() {
 

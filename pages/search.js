@@ -11,7 +11,6 @@ export default function AdvancedSearch() {
   const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
   const { register, handleSubmit, formState: { errors } } = useForm();
 
-  // Modify the function to be asynchronous
   const submitForm = async (data) => {
     let queryString = `searchBy=true`;
 

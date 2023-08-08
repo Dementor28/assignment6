@@ -1,3 +1,5 @@
+
+
 import { Card, Form, Alert, Button } from "react-bootstrap";
 import { useState, useEffect } from 'react';
 import { authenticateUser } from "../lib/authenticate";
@@ -7,7 +9,7 @@ import { useAtom } from 'jotai';
 import { favouritesAtom } from '../store';
 import { searchHistoryAtom } from '../store';
 
-import { getFavourites, getHistory } from '/lib/userData';
+import { getFavourites, getHistory } from '../lib/userData';
 
 export default function Login(props) {
 
@@ -27,6 +29,7 @@ export default function Login(props) {
       await updateAtoms();
       router.push("/favourites");
     }catch(err){
+    console.log("Error in login reroute")
      setWarning(err.message);
     }
 

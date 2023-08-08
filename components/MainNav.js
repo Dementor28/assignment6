@@ -3,80 +3,78 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar, Nav, Form, Button, NavDropdown } from "react-bootstrap";
 import { useRouter } from "next/router";
-import Container from 'react-bootstrap/Container';
+import Container from "react-bootstrap/Container";
 import { useAtom } from "jotai";
 import { searchHistoryAtom } from "../store";
-import { addToHistory, removeFromHistory } from "../lib/userData"; // Import the addToHistory and removeFromHistory functions
-import { readToken, removeToken } from "/lib/authenticate"; // Import the readToken function
+import { addToHistory, removeFromHistory } from "../lib/userData";
+import { readToken, removeToken } from "/lib/authenticate";
 
-const MainNav = () => {
+function MainNav() {
   const router = useRouter();
-  const [searchField, setSearchField] = useState("");
+
+  const [route, setRoute] = useState();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
-  const token = readToken(); // Get the token value
-
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!searchField) {
-      return;
-    }
-
-    const queryString = `title=true&q=${searchField}`;
-    setSearchHistory(await addToHistory(queryString));
-
-    router.push(`/artwork?${queryString}`);
+    setIsExpanded(false);
+    router.push(`/artwork?title=true&q=${route}`);
+    setSearchHistory(await addToHistory(`title=true&q=${route}`));
     e.target.reset();
-    setIsExpanded(false);
   };
 
-  const handleNavDropdownItemClick = () => {
-    setIsExpanded(false);
-  };
+  let token = readToken();
 
-  // Define the logout function
-  const logout = () => {
-    setIsExpanded(false); // Collapse the menu
-    removeToken(); // Remove the token from localStorage
-    router.push("/login"); // Redirect the user to the login page
-  };
+  function logout() {
+    setIsExpanded(false);
+    removeToken();
+    router.push("/login");
+  }
 
   return (
     <>
-      <Container>
-        <Navbar
-          className="fixed-top navbar-dark bg-primary"
-          expand="md"
-          expanded={isExpanded}
-        >
-          <Navbar.Brand>Abdullah</Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbar-nav" onClick={handleToggle} />
-          <Navbar.Collapse id="navbar-nav">
-            <Nav className="mr-auto">
+      <Navbar
+        className="fixed-top"
+        bg="light"
+        expand="lg"
+        expanded={isExpanded}
+      >
+        <Container>
+          {token ? (
+            <Navbar.Brand>{token.userName}</Navbar.Brand>
+          ) : (
+            <Navbar.Brand>Museum of Art</Navbar.Brand>
+          )}
+
+          <Navbar.Toggle
+            aria-controls="basic-navbar-nav"
+            onClick={(e) => {
+              setIsExpanded(!isExpanded);
+            }}
+          />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
               <Link href="/" passHref>
                 <Nav.Link
-                  active={router.pathname === "/"}
-                  onClick={() => {
+                  onClick={(e) => {
                     setIsExpanded(false);
                     router.push("/");
                   }}
+                  active={router.pathname === "/"}
                 >
                   Home
                 </Nav.Link>
               </Link>
-              {token && ( // Show the "Advanced Search" navigation item if the user is logged in
+              {token && (
                 <Link href="/search" passHref>
                   <Nav.Link
-                    active={router.pathname === "/search"}
-                    onClick={() => {
+                    onClick={(e) => {
                       setIsExpanded(false);
                       router.push("/search");
                     }}
+                    active={router.pathname === "/search"}
                   >
                     Advanced Search
                   </Nav.Link>
@@ -84,7 +82,7 @@ const MainNav = () => {
               )}
             </Nav>
             &nbsp;
-            {token && ( // Show the "Search" form if the user is logged in
+            {token && (
               <Form className="d-flex" onSubmit={handleSubmit}>
                 <Form.Control
                   type="search"
@@ -92,7 +90,7 @@ const MainNav = () => {
                   className="me-2"
                   aria-label="Search"
                   onChange={(e) => {
-                    setSearchField(e.target.value);
+                    setRoute(e.target.value);
                   }}
                 />
                 <Button type="submit" variant="success">
@@ -101,23 +99,19 @@ const MainNav = () => {
               </Form>
             )}
             &nbsp;
-            <Nav as="ul" className="ml-auto" style={{ marginBottom: "10px" }}>
-              {token ? ( // Show the "User Name" dropdown if the user is logged in
-                <NavDropdown title={token.userName} id="basic-nav-dropdown">
-                  <Link href="/history">
+            {token ? (
+              <Nav>
+                <NavDropdown
+                  title={token.userName}
+                  id="basic-nav-dropdown"
+                  active={
+                    router.pathname === "/favourites" ||
+                    router.pathname === "/history"
+                  }
+                >
+                  <Link href="/favourites" passHref>
                     <NavDropdown.Item
-                      onClick={() => {
-                        setIsExpanded(false);
-                        router.push("/history");
-                      }}
-                      active={router.pathname === "/history"}
-                    >
-                      History
-                    </NavDropdown.Item>
-                  </Link>
-                  <Link href="/favourites">
-                    <NavDropdown.Item
-                      onClick={() => {
+                      onClick={(e) => {
                         setIsExpanded(false);
                         router.push("/favourites");
                       }}
@@ -126,43 +120,54 @@ const MainNav = () => {
                       Favourites
                     </NavDropdown.Item>
                   </Link>
-                  <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item> {/* Add the Logout item */}
+                  <Link href="/history" passHref>
+                    <NavDropdown.Item
+                      onClick={(e) => {
+                        setIsExpanded(false);
+                        router.push("/history");
+                      }}
+                      active={router.pathname === "/history"}
+                    >
+                      Search History
+                    </NavDropdown.Item>
+                  </Link>
+                  <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
                 </NavDropdown>
-              ) : (
-                // Show the Register and Login links if the user is not logged in
-                <Nav className="me-auto">
-                  <Link href="/register" passHref>
-                    <Nav.Link
-                      onClick={() => {
-                        setIsExpanded(false);
-                        router.push("/register");
-                      }}
-                      active={router.pathname === "/register"}
-                    >
-                      Register
-                    </Nav.Link>
-                  </Link>
-                  <Link href="/login" passHref>
-                    <Nav.Link
-                      onClick={() => {
-                        setIsExpanded(false);
-                        router.push("/login");
-                      }}
-                      active={router.pathname === "/login"}
-                    >
-                      Login
-                    </Nav.Link>
-                  </Link>
-                </Nav>
-              )}
-            </Nav>
+              </Nav>
+            ) : (
+              <Nav className="ms-auto">
+                <Link href="/register" passHref>
+                  <Nav.Link
+                    onClick={(e) => {
+                      setIsExpanded(false);
+                      router.push("/register");
+                    }}
+                    active={router.pathname === "/register"}
+                    
+                  >
+                    Register
+                  </Nav.Link>
+                </Link>
+                <Link href="/login" passHref>
+                  <Nav.Link
+                    onClick={(e) => {
+                      setIsExpanded(false);
+                      router.push("/login");
+                    }}
+                    active={router.pathname === "/login"}
+                  >
+                    Login
+                  </Nav.Link>
+                </Link>
+              </Nav>
+            )}
           </Navbar.Collapse>
-        </Navbar>
-      </Container>
+        </Container>
+      </Navbar>
       <br />
       <br />
     </>
   );
-};
+}
 
 export default dynamic(() => Promise.resolve(MainNav), { ssr: false });
